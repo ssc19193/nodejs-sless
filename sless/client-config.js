@@ -1,27 +1,20 @@
-const path = require('path');
-const file = require('fs');
-
-const configFile = path.join(__dirname, '../../sless-client-config.js');
-if(file.existsSync(configFile)){
-    module.exports = require(configFile);
-}else{
-    module.exports = {
-        loglevel : 'INFO', // DEBUG
-        domains:[
-            '*docker.com','*google.com',
-        ],
-        proxy:{
-            proxyServer: '127.0.0.1',
-            proxyServerPort: 8081
-        },
-        sless:{
-            active:'v2',
-            v2:{
-                WebSocketSever: '127.0.0.1',
-                WebSocketSeverPort: 8848,
-                WebSocketSeverTls: false,
-                uuid : '623a5a8e-1cd7-4301-bd26'
-            }
+module.exports = {
+    loglevel : 'INFO', // DEBUG
+    domains:[
+        '*docker.com','*google.com',
+    ],
+    proxy:{
+        proxyServer: '127.0.0.1',
+        proxyServerPort: 8081
+    },
+    sless:{
+        active:'v2',
+        v2:{
+            WebSocketSever: '127.0.0.1', // 填服务器的域名
+            WebSocketSeverPort: 8848, // 填服务器的端口
+            WebSocketSeverTls: false, // 是否是https的, 影响链接时用wss还是ws
+            rejectUnauthorized: true, // 使用wss协议时, 是否验证域名证书
+            uuid : '623a5a8e-1cd7-4301-bd26'
         }
     }
 }

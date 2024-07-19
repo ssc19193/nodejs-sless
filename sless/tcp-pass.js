@@ -1,15 +1,17 @@
 let net = require('net');
-let seq = 1000000;
+let serverPort = 1081;
+let proxyServer = '127.0.0.1';
+let proxyServerPort = 1080;
 
 net.createServer(function (client) {
     console.log('conn')
     client.once('data', function(data){
-        let server = net.createConnection(1080, '127.0.0.1');
+        let server = net.createConnection(proxyServerPort, proxyServer);
         server.write(data)
         client.on("data", function (data) { server.write(data); });
         server.on("data", function (data) { client.write(data); });
     });
-}).listen(1081);
+}).listen(serverPort);
 
 console.log('Proxy server running at localhost:' + local_port);
 

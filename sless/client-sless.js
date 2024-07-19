@@ -10,6 +10,7 @@ let slessServerOpt = proxyConfig.sless[proxyConfig.sless.active];
 let WebSocketSever = slessServerOpt?.WebSocketSever;
 let WebSocketSeverPort = slessServerOpt?.WebSocketSeverPort;
 let WebSocketSeverTls = slessServerOpt?.WebSocketSeverTls;
+let rejectUnauthorized = slessServerOpt?.rejectUnauthorized;
 
 let uuid = Buffer.from(slessServerOpt?.uuid || 'unset');
 let i = 1000000;
@@ -35,6 +36,15 @@ function isInProxy(domain){
     return proxyConfig.domains.some(fn=>{
         return fn(domain);
     })
+}
+function getWsServer(){
+    if(WebSocketSeverTls){
+        return new WebSocket(`wss://${WebSocketSever}:${WebSocketSeverPort}`,{
+            rejectUnauthorized:rejectUnauthorized
+        });
+    }else{
+        return new WebSocket(`ws://${WebSocketSever}:${WebSocketSeverPort}`);
+    }
 }
 
 let appLog = slessTool.logFactory(i,proxyConfig.loglevel);
@@ -74,14 +84,7 @@ net.createServer(client => {
         log('DEBUG',`Full Request:\r\n${opt.data.toString()}`);
         log('INFO',`PROXY ${opt.method} ${opt.host}:${opt.port}`);
 
-        let wss = null
-        if(WebSocketSeverTls){
-            wss = new WebSocket(`wss://${WebSocketSever}:${WebSocketSeverPort}`, {
-                rejectUnauthorized: false
-            });
-        }else{
-            wss = new WebSocket(`ws://${WebSocketSever}:${WebSocketSeverPort}`);
-        }
+        let wss = getWsServer()
         wss.on('error', err=>{
             log('ERROR',`PROXY CONNECT ERR: ${err.code} - ${err.message}\r\n${err}`);
             if(err.message.indexOf('Unexpected server response: 502') != -1){
@@ -146,16 +149,11 @@ net.createServer(client => {
         process.exit(1)
     }
     appLog('INFO',`TCP Server start ${proxyServer}:${proxyServerPort} to ${WebSocketSever}:${WebSocketSeverPort}`);
-    if(WebSocketSeverTls){
-        wss = new WebSocket(`wss://${WebSocketSever}:${WebSocketSeverPort}`, {
-            rejectUnauthorized: false
-        });
-    }else{
-        wss = new WebSocket(`ws://${WebSocketSever}:${WebSocketSeverPort}`);
-    }
+    let wss = getWsServer();
     appLog('INFO',`trying ${wss._url}`);
     wss.once('open', () => {
         appLog('INFO',`${WebSocketSever}:${WebSocketSeverPort} is available.`);
+        wss.close();
     });
     wss.once('error', err => {
         appLog('ERROR',`${WebSocketSever}:${WebSocketSeverPort} is unavailable: ${err.code} ${err.message}\r\n${err}`);
