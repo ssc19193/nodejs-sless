@@ -3,7 +3,7 @@ const expressServer = require('./server-express');
 const slessServer = require('./sless/server-sless');
 const http = require('http');
 
-var port = process.env.PORT || 3000;
+var port = process.env.PORT;
 var uuid = process.env.UUID;
 expressServer.set('port', port);
 

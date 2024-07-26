@@ -3,8 +3,9 @@
   "version": "1.0.0",
   "main": "app.js",
   "scripts": {
-    "start": "node app.js",
-    "server": "node dev.js",
+    "server": "node server.js",
+    "start": "node server.js",
+    "dev": "node dev.js",
     "client": "node ./sless/client-sless.js"
   },
   "keywords": [],
