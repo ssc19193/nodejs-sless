@@ -54,6 +54,12 @@ net.createServer(client => {
     
     client.once('data', data =>{
         let opt = slessTool.readSocket(data);
+        if(opt.host == proxyServer &&  opt.port == proxyServerPort){
+            log('INFO',`target is current client, close it`);
+            client.write(Buffer.from("HTTP/1.1 204 No Content\r\nConnection: close\r\n\r\n"));
+            client.end();client.destroy();
+            return;
+        }
         if(!isInProxy(opt.host)){
             log('INFO',`DERICT ${opt.method} ${opt.host}:${opt.port}`);
             net.createConnection({
