@@ -14,7 +14,7 @@ module.exports = {
             WebSocketSeverPort: 8848, // 填服务器的端口
             WebSocketSeverTls: false, // 是否是https的, 影响链接时用wss还是ws
             rejectUnauthorized: true, // 使用wss协议时, 是否验证域名证书
-            uuid : '623a5a8e-1cd7-4301-bd26'
+            uuid : 'e3c51479-c0e1-4a19-894b-fddc5bb67556'
         }
     }
 }

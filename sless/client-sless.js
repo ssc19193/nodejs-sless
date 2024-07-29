@@ -40,10 +40,13 @@ function isInProxy(domain){
 function getWsServer(){
     if(WebSocketSeverTls){
         return new WebSocket(`wss://${WebSocketSever}:${WebSocketSeverPort}`,{
-            rejectUnauthorized:rejectUnauthorized
+            rejectUnauthorized:rejectUnauthorized,
+            headers:{'x-sless':1}
         });
     }else{
-        return new WebSocket(`ws://${WebSocketSever}:${WebSocketSeverPort}`);
+        return new WebSocket(`ws://${WebSocketSever}:${WebSocketSeverPort}`,{
+            headers:{'x-sless':1}
+        });
     }
 }
 

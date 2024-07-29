@@ -1,4 +1,4 @@
-process.env.PORT = 8848;
-process.env.UUID = '623a5a8e-1cd7-4301-bd26'
+process.env.PORT = 8082;
+process.env.UUID = 'e3c51479-c0e1-4a19-894b-fddc5bb67556'
 
 require('./server')
