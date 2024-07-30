@@ -13,14 +13,14 @@ function slessConnect(ws){
     log('INFO', "on connection");
     ws.once('message', msg => {
         let opts = slessTool.fromSlessHeader(msg)
-        log(`on message: ${msg.length} ${uuid} ${opts.uuid} ${opts.targetHost} ${opts.targetPort} ${opts.timestamp}`);
+        log('DEBUG',`on message: ${msg.length} ${uuid} ${opts.uuid} ${opts.targetHost} ${opts.targetPort} ${opts.timestamp}`);
         if(opts.uuid !== uuid || opts.timestamp < Date.now() - 1000*60){
             log('ERROR', "uuid is invalid");
             ws.send(Buffer.from('Time:' + new Date()));
             ws.close();
             return;
         }
-        log('connect check success');
+        log('INFO',`connect to ${opts.targetHost}:${opts.targetPort}`);
         const duplex = WebSocket.createWebSocketStream(ws);
         net.connect({ host: opts.targetHost, port: opts.targetPort }, function () {
             ws.send([0,0]);
@@ -45,7 +45,6 @@ function slessConnect(ws){
 function vlessConnect(ws){
     let log = slessTool.logFactory('VLESS-'+ ++i,'INFO');
     log('INFO', "on connection");
-
     ws.once('message', msg => {
         const [VERSION] = msg;
         const id = msg.slice(1, 17);
@@ -61,7 +60,8 @@ function vlessConnect(ws){
         const host = ATYP === 1 ? msg.slice(i, i += 4).join('.') : // IPV4
             (ATYP === 2 ? new TextDecoder().decode(msg.slice(i + 1, i += 1 + msg.slice(i, i + 1).readUInt8())) : // domain
                 (ATYP === 3 ? msg.slice(i, i += 16).reduce((s, b, i, a) => (i % 2 ? s.concat(a.slice(i - 1, i + 1)) : s), []).map(b => b.readUInt16BE(0).toString(16)).join(':') : '')); // IPV6
-        log('INFO',`connect check success ${host}:${targetPort}`);
+
+        log('INFO',`connect to ${host}:${targetPort}`);
         const duplex = WebSocket.createWebSocketStream(ws);
         net.connect({ host, port: targetPort }, function () {
             ws.send(new Uint8Array([VERSION, 0]));
@@ -76,7 +76,6 @@ function vlessConnect(ws){
             this.write(msg.slice(i));
             duplex.pipe(this);
             this.pipe(duplex);
-            // duplex.on('error', errcb('E1:')).pipe(this).on('error', errcb('E2:')).pipe(duplex);
         }).on('error', err=>{
             log('ERROR', `NET CONN ERROR> ${host}:${targetPort} : ${err.code}: ${err.message}\r\n${err}`);
         });
@@ -84,7 +83,6 @@ function vlessConnect(ws){
         log('ERROR', `WSS ERROR: ${err.code}: ${err.message}\r\n${err}`);
     });
 }
-
 
 module.exports = (server, _uuid) => {
     if(!_uuid){
