@@ -3,7 +3,7 @@ const expressServer = require('./server-express');
 const wssServer = require('./sless/server-sless');
 const http = require('http');
 
-var port = process.env.PORT;
+var port = process.env.PORT || 3000; // 3000 与dockfiler的端口号要一致
 var uuid = process.env.UUID;
 expressServer.set('port', port);
 
