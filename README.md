@@ -30,3 +30,6 @@ https://github.com/2dust/v2rayN/releases
 修改dev.js中的UUID的值
 mv dev.js app.js
 devil www restart 域名
+
+## back4app
+使用dockerfile启动
