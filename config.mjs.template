@@ -1,0 +1,19 @@
+export default {
+    // 服务器上websocket端口
+    SERVER_WEBSOCKET_PORT: 81,
+    SERVER_WEBSOCKET_PATH: '/websocketctl',
+    
+    // websocket注册码
+    REGISTER_TOKEN: 'your_register_token',
+    
+    // 服务器上socket端口
+    SERVER_SOCKET_PORT: 80,
+    SERVER_SOCKET_HOST: 'your_open_host_domain_or_ip',
+
+    // 服务器是否使用https
+    SERVER_HTTPS: false,
+    
+    // 客户端上目标服务器端口
+    CLIENT_SOCKET_PORT: 8080,
+    CLIENT_SOCKET_HOST: 'your_local_server_ip'
+}
