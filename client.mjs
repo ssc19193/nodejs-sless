@@ -97,6 +97,9 @@ function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_HOST, CLIENT_
             console.error(`[DATA]Error: ${err}`);
         });
     });
+    setInterval(() => {
+        wsCtl.send('I AM HERE')
+    }, 5000);
 }
 
 start(

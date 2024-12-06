@@ -50,7 +50,12 @@ function handle_ctl(ws){
         console.error('[WS-CTL]WebSocket error:', error.message);
     });
 
+    ws.on('message', (message) => {
+        ctrlWs.__last_time = Date.now();
+    });
+
     ctrlWs = ws;
+    ctrlWs.__last_time = Date.now();
 }
 
 function handle_data(ws){
@@ -111,6 +116,15 @@ function openSocket(){
         cbMap[''+_idx] = {resolve, reject};
     });
 }
+
+let checkInterval = 1000 * 5;
+
+setInterval(()=>{
+    if(ctrlWs && ctrlWs.__last_time && ctrlWs.__last_time < Date.now() - checkInterval*2){
+        console.log('[WS-CTL]control websocket offline', ctrlWs.__last_time, Date.now());
+        ctrlWs = null;
+    }
+}, checkInterval);
 
 export default {
     init, openSocket
