@@ -42,9 +42,13 @@ function handle_ws(socket, server_websockt_port, data){
     });
 }
 
-function init(port, server_websocket_path, server_websockt_port, ws_tool){
-    console.log('[TCP]init by ', port, server_websocket_path, server_websockt_port);
-    if(!port || !server_websocket_path || !server_websockt_port)
+let activeService = null;
+
+function init(port, server_websocket_path, server_websockt_port,
+    server_view_service_path, server_choose_service_path, ws_tool){
+    console.log('[TCP]init by ', port, server_websocket_path, server_websockt_port, server_view_service_path, server_choose_service_path);
+    if(!port || !server_websocket_path || !server_websockt_port 
+        || !server_view_service_path || !server_choose_service_path)
         return console.log('[TCP]args error');
 
     const server = net.createServer((socket) => {
@@ -62,9 +66,37 @@ function init(port, server_websocket_path, server_websockt_port, ws_tool){
                 console.log('[SK]handle_ws');
                 return handle_ws(socket, server_websockt_port, data);
             }
+            if(path == server_view_service_path){
+                console.log('[SK]'+path);
+                socket.write('HTTP/1.1 200 OK\r\n\r\n Registered: '
+                    +ws_tool.getService().join(',') 
+                    + ", Active:" + activeService+'\r\n\r\n');
+                socket.end();
+                return;
+            }
+            if(path.indexOf(server_choose_service_path) == 0){
+                console.log('[SK]'+path);
+                let service = path.substring(server_choose_service_path.length+1);
+                let services = ws_tool.getService();
+                if(services.indexOf(service) >= 0){
+                    activeService = service;
+                    socket.write('HTTP/1.1 200 OK\r\n\r\nSwitch to service: '+service+'\r\n\r\n');
+                    socket.end();
+                    return;
+                }else{
+                    socket.write('HTTP/1.1 200 OK\r\n\r\nTarget service not exists\r\n\r\n');
+                    socket.end();
+                    return;
+                }
+            }
+            if(activeService == null){
+                socket.write('HTTP/1.1 200 OK\r\n\r\nNeed to select service first\r\n\r\n');
+                socket.end();
+                return;
+            }
 
             console.log('[SK]openSocket');
-            ws_tool.openSocket()
+            ws_tool.openSocket(activeService)
                 .then(ws_socket=>{
                     console.log('[SK-DATA]OPEND');
                     

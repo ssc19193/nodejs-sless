@@ -11,6 +11,7 @@ function init(port, register_token){
     wss.on('connection', (ws, req) => {
         let x_token = req.headers['x-token'];
         let x_type = req.headers['x-type'];
+        let x_data = req.headers['x-data'];
         console.log('[WS]connect', x_token, x_type);
         
         if(register_token !== x_token){
@@ -22,7 +23,7 @@ function init(port, register_token){
 
         console.log('[WS]using type', x_type);
         if(x_type == 'ctl'){
-            return handle_ctl(ws);
+            return handle_ctl(ws, x_data);
         }
         if(x_type == 'data'){
             return handle_data(ws);
@@ -38,24 +39,27 @@ function init(port, register_token){
     });
 };
 
-let ctrlWs = null;
+let ctrlWsMap = {};
 const cbMap = {}
 
-function handle_ctl(ws){
+function handle_ctl(ws, data){
     ws.on('close', () => {
+        delete ctrlWsMap[ws.__service_key];
         console.log('[WS-CTL]Client disconnected');
     });
 
     ws.on('error', (error) => {
+        delete ctrlWsMap[ws.__service_key];
         console.error('[WS-CTL]WebSocket error:', error.message);
     });
+    
+    ws.on('pong', ()=>{
+        ws.__last_time = Date.now();
+    })
 
-    ws.on('message', (message) => {
-        ctrlWs.__last_time = Date.now();
-    });
-
-    ctrlWs = ws;
-    ctrlWs.__last_time = Date.now();
+    ctrlWsMap[data] = ws;
+    ws.__last_time = Date.now();
+    ws.__service_key = data;
 }
 
 function handle_data(ws){
@@ -103,8 +107,9 @@ function handle_data(ws){
 
 let idx = 1;
 
-function openSocket(){
+function openSocket(service){
     return new Promise((resolve, reject) => {
+        let ctrlWs = ctrlWsMap[service];
         if(!ctrlWs){
             console.log('[WS]backend is not ready');
             return reject('backend is not ready');
@@ -120,12 +125,23 @@ function openSocket(){
 let checkInterval = 1000 * 5;
 
 setInterval(()=>{
-    if(ctrlWs && ctrlWs.__last_time && ctrlWs.__last_time < Date.now() - checkInterval*2){
-        console.log('[WS-CTL]control websocket offline', ctrlWs.__last_time, Date.now());
-        ctrlWs = null;
+    let services = Object.keys(ctrlWsMap);
+    for(let service of services){
+        let ctrlWs = ctrlWsMap[service];
+        if(!ctrlWs) return;
+
+        if(ctrlWs.__last_time && ctrlWs.__last_time < Date.now() - checkInterval*2){
+            console.log('[WS-CTL]control websocket offline', ctrlWs.__last_time, Date.now());
+            delete ctrlWsMap[service];
+        }
+        ctrlWs.ping();
     }
 }, checkInterval);
 
+function getService(){
+    return Object.keys(ctrlWsMap);
+}
+
 export default {
-    init, openSocket
+    init, openSocket, getService
 }

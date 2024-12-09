@@ -5,7 +5,9 @@ const config = {
     SERVER_WEBSOCKET_PORT: process.env.SERVER_WEBSOCKET_PORT,
     SERVER_WEBSOCKET_PATH: process.env.SERVER_WEBSOCKET_PATH,
     REGISTER_TOKEN: process.env.REGISTER_TOKEN,
-    SERVER_SOCKET_PORT: process.env.SERVER_SOCKET_PORT
+    SERVER_SOCKET_PORT: process.env.SERVER_SOCKET_PORT,
+    SERVER_CHOOSE_SERVICE_PATH: process.env.SERVER_CHOOSE_SERVICE_PATH,
+    SERVER_VIEW_SERVICE_PATH: process.env.SERVER_VIEW_SERVICE_PATH
 }
 
 let start = Promise.resolve();
@@ -27,5 +29,7 @@ start.then(()=>{
     sks.init(config.SERVER_SOCKET_PORT,
         config.SERVER_WEBSOCKET_PATH,
         config.SERVER_WEBSOCKET_PORT,
+        config.SERVER_VIEW_SERVICE_PATH,
+        config.SERVER_CHOOSE_SERVICE_PATH,
         wss_tool)
 })

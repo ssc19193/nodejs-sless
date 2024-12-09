@@ -2,11 +2,20 @@ import WebSocket, { createWebSocketStream } from 'ws';
 import net from 'net';
 import config from './config.mjs'
 
-function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_HOST, CLIENT_SOCKET_PORT) {
+function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_SOCKET_HOST, CLIENT_SOCKET_PORT) {
+    console.log('[CTL]Starting...', REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_SOCKET_HOST, CLIENT_SOCKET_PORT);
+
+    if(!REGISTER_TOKEN || !SERVER_WEBSOCKET_URL || !CLIENT_SOCKET_NAME || !CLIENT_SOCKET_HOST || !CLIENT_SOCKET_PORT){
+        console.log('[CTL]Invalid parameters');
+        return;
+    }
+    
+
     const wsCtl = new WebSocket(SERVER_WEBSOCKET_URL, {
         headers: {
             'x-token': REGISTER_TOKEN,
-            'x-type': 'ctl'
+            'x-type': 'ctl',
+            'x-data': CLIENT_SOCKET_NAME
         }
     });
 
@@ -97,9 +106,6 @@ function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_HOST, CLIENT_
             console.error(`[DATA]Error: ${err}`);
         });
     });
-    setInterval(() => {
-        wsCtl.send('I AM HERE')
-    }, 5000);
 }
 
 start(
@@ -107,6 +113,7 @@ start(
     (config.SERVER_HTTPS ? 'wss://' : 'ws://')
     + config.SERVER_SOCKET_HOST + ":" + config.SERVER_SOCKET_PORT
     + config.SERVER_WEBSOCKET_PATH,
+    config.CLIENT_SOCKET_NAME,
     config.CLIENT_SOCKET_HOST,
     config.CLIENT_SOCKET_PORT
 )
