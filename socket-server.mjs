@@ -84,6 +84,7 @@ function init(port, server_websocket_path, server_websockt_port,
                     socket.end();
                     return;
                 }else{
+                    activeService = null;
                     socket.write('HTTP/1.1 200 OK\r\n\r\nTarget service not exists\r\n\r\n');
                     socket.end();
                     return;
