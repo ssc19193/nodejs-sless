@@ -5,7 +5,7 @@ let preWsCtl = null;
 function start(config) {
     console.log('[CTL]Starting...', config);
     
-    const websocket_url = (config.https ? 'wss://' : 'ws://') 
+    const websocket_url = (config.socket_https ? 'wss://' : 'ws://') 
                             + config.socket_host + ":" + config.socket_port
                             + config.socket_ctl_path;
     const wsCtl = new WebSocket(websocket_url, {
