@@ -11,3 +11,6 @@ websocket监听服务端口B
     有转发数据时通知客户端新建连接
     通过新建的链接将数据发送给客户端
 
+服务端 node server.mjs
+客户端 node client.mjs 配置名
+    node client.mjs v1 读取 config-v1.mjs

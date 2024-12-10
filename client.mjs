@@ -1,34 +1,39 @@
 import WebSocket, { createWebSocketStream } from 'ws';
 import net from 'net';
-import config from './config.mjs'
 
-function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_SOCKET_HOST, CLIENT_SOCKET_PORT) {
-    console.log('[CTL]Starting...', REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_SOCKET_HOST, CLIENT_SOCKET_PORT);
-
-    if(!REGISTER_TOKEN || !SERVER_WEBSOCKET_URL || !CLIENT_SOCKET_NAME || !CLIENT_SOCKET_HOST || !CLIENT_SOCKET_PORT){
-        console.log('[CTL]Invalid parameters');
-        return;
-    }
+let preWsCtl = null;
+function start(config) {
+    console.log('[CTL]Starting...', config);
     
-
-    const wsCtl = new WebSocket(SERVER_WEBSOCKET_URL, {
+    const websocket_url = (config.https ? 'wss://' : 'ws://') 
+                            + config.socket_host + ":" + config.socket_port
+                            + config.socket_ctl_path;
+    const wsCtl = new WebSocket(websocket_url, {
         headers: {
-            'x-token': REGISTER_TOKEN,
+            'x-token': config.websocket_token,
             'x-type': 'ctl',
-            'x-data': CLIENT_SOCKET_NAME
+            'x-data': config.serivce_name
         }
     });
+    wsCtl.__start_time = new Date();
 
     wsCtl.on('open', function open() {
         console.log('[CTL]Connected to WebSocket server');
+        preWsCtl = wsCtl;
+        
+        reConn(config, config.refresh_time);
     });
 
     wsCtl.on('close', function close() {
-        console.log('[CTL]Disconnected from WebSocket server');
+        console.log('[CTL]Disconnected from WebSocket server,' + (new Date() - wsCtl.__start_time)/1000);
+        
+        preWsCtl == wsCtl && reConn(config, config.retry_time);
     });
 
     wsCtl.on('error', function error(err) {
-        console.error(`[CTL]WebSocket error: ${err.message}`);
+        console.error(`[CTL]WebSocket error: ${err.message}, `+ (new Date() - wsCtl.__start_time)/1000);
+        
+        preWsCtl = wsCtl;
     });
 
     wsCtl.on('message', function incoming(data) {
@@ -44,9 +49,9 @@ function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_
             return;
         }
 
-        const wsData = new WebSocket(SERVER_WEBSOCKET_URL, {
+        const wsData = new WebSocket(websocket_url, {
             headers: {
-                'x-token': REGISTER_TOKEN,
+                'x-token': config.websocket_token,
                 'x-type': 'data'
             }
         });
@@ -54,11 +59,12 @@ function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_
             console.log('[DATA]Connected to WebSocket server');
 
             const client = new net.Socket();
-            client.connect(CLIENT_SOCKET_PORT, CLIENT_SOCKET_HOST, () => {
+            client.connect(config.target_port, config.target_host, () => {
                 console.log('[CONN]Connected to server');
 
                 wsData.once('message', function incoming(data) {
                     console.log(`[DATA]Received: ${data}`);
+                    
                     let [ack, msg] = data.toString().split(' ');
                     if (ack !== 'OK') {
                         console.log(`[DATA]RE CONNECT ERROR ${msg}`);
@@ -74,7 +80,7 @@ function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_
                             client.end();
                         });
                         socket.on('error', function (err) {
-                            console.log('[SOCKET]Connection error', err);
+                            console.log('[SOCKET]Connection error', err?.message);
                             wsData.close();
                             client.end();
                         });
@@ -106,14 +112,19 @@ function start(REGISTER_TOKEN, SERVER_WEBSOCKET_URL, CLIENT_SOCKET_NAME, CLIENT_
             console.error(`[DATA]Error: ${err}`);
         });
     });
+    return wsCtl;
 }
 
-start(
-    config.REGISTER_TOKEN,
-    (config.SERVER_HTTPS ? 'wss://' : 'ws://')
-    + config.SERVER_SOCKET_HOST + ":" + config.SERVER_SOCKET_PORT
-    + config.SERVER_WEBSOCKET_PATH,
-    config.CLIENT_SOCKET_NAME,
-    config.CLIENT_SOCKET_HOST,
-    config.CLIENT_SOCKET_PORT
-)
+let preReConnId = null;
+function reConn(config, time){
+	preReConnId && clearTimeout(preReConnId);
+	preReConnId = setTimeout(function(){
+		start(config);
+	}, time);
+}
+let config_file = './config-'+(process.argv[2] || 'default')+'.mjs'
+
+
+import(config_file).then(config=>{
+    start(config.default); 
+})

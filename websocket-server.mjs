@@ -1,27 +1,23 @@
 #!/usr/bin/env node
 import {WebSocketServer, createWebSocketStream} from 'ws';
 
-function init(port, register_token){
-    console.log('[WS]init by ', port, register_token);
-    if(!port || !register_token)
-        return console.log('[WS]args error');
-
-    const wss = new WebSocketServer({ port: port });
+function init(websocket_port, websocket_token){
+    console.log('[WS]init by ', websocket_port, websocket_token);
+    const wss = new WebSocketServer({ port: websocket_port });
 
     wss.on('connection', (ws, req) => {
         let x_token = req.headers['x-token'];
         let x_type = req.headers['x-type'];
         let x_data = req.headers['x-data'];
-        console.log('[WS]connect', x_token, x_type);
+        console.log('[WS]connect', x_token, x_type, x_data);
         
-        if(register_token !== x_token){
-            console.log('[WS]token is valid:', x_token, register_token);
+        if(websocket_token !== x_token){
+            console.log('[WS]token is valid:', x_token, websocket_token);
             ws.send('ERR token is valid');
             ws.close();
             return;
         }
 
-        console.log('[WS]using type', x_type);
         if(x_type == 'ctl'){
             return handle_ctl(ws, x_data);
         }
@@ -35,7 +31,7 @@ function init(port, register_token){
     });
 
     wss.on('listening', () => {
-        console.log(`[WS] server is running on port ${port}`);
+        console.log(`[WS] server is running on port ${websocket_port}`);
     });
 };
 
@@ -44,22 +40,26 @@ const cbMap = {}
 
 function handle_ctl(ws, data){
     ws.on('close', () => {
-        delete ctrlWsMap[ws.__service_key];
-        console.log('[WS-CTL]Client disconnected');
+        ws.__service_key && delete ctrlWsMap[ws.__service_key];
+        console.log('[WS-CTL]Client disconnected',ws.__service_key);
     });
 
     ws.on('error', (error) => {
-        delete ctrlWsMap[ws.__service_key];
-        console.error('[WS-CTL]WebSocket error:', error.message);
+        ws.__service_key && delete ctrlWsMap[ws.__service_key];
+        console.error('[WS-CTL]WebSocket error:', ws.__service_key, error.message);
     });
     
     ws.on('pong', ()=>{
         ws.__last_time = Date.now();
     })
 
+    if(ctrlWsMap[data]){
+        ctrlWsMap[data].__service_key = null;
+        ctrlWsMap[data].close();
+    }
     ctrlWsMap[data] = ws;
-    ws.__last_time = Date.now();
-    ws.__service_key = data;
+    ctrlWsMap[data].__last_time = Date.now();
+    ctrlWsMap[data].__service_key = data;
 }
 
 function handle_data(ws){

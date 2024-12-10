@@ -2,34 +2,30 @@ import wss_tool from './websocket-server.mjs'
 import sks from './socket-server.mjs'
 
 const config = {
-    SERVER_WEBSOCKET_PORT: process.env.SERVER_WEBSOCKET_PORT,
-    SERVER_WEBSOCKET_PATH: process.env.SERVER_WEBSOCKET_PATH,
-    REGISTER_TOKEN: process.env.REGISTER_TOKEN,
-    SERVER_SOCKET_PORT: process.env.SERVER_SOCKET_PORT,
-    SERVER_CHOOSE_SERVICE_PATH: process.env.SERVER_CHOOSE_SERVICE_PATH,
-    SERVER_VIEW_SERVICE_PATH: process.env.SERVER_VIEW_SERVICE_PATH
+    socket_port: process.env.SOCKET_PORT,
+    socket_auth_path: process.env.SOCKET_AUTH_PATH,
+    socket_ctl_path: process.env.SOCKET_CTL_PATH,
+    socket_ip_key: process.env.SOCKET_IP_KEY,
+
+    websocket_token: process.env.WEBSOCKET_TOKEN,
+    websocket_port: process.env.WEBSOCKET_PORT,
 }
 
-let start = Promise.resolve();
-if(!config.SERVER_WEBSOCKET_PORT 
-    ||!config.SERVER_WEBSOCKET_PATH 
-    ||!config.REGISTER_TOKEN 
-    ||!config.SERVER_SOCKET_PORT){
-    start = import('./config.mjs').then(local_config=>{
-        Object.keys(config).map(key=>{
-            config[key] = local_config.default[key]
-        })
-    })
-}
-
-start.then(()=>{
-    wss_tool.init(config.SERVER_WEBSOCKET_PORT, 
-        config.REGISTER_TOKEN)
-        
-    sks.init(config.SERVER_SOCKET_PORT,
-        config.SERVER_WEBSOCKET_PATH,
-        config.SERVER_WEBSOCKET_PORT,
-        config.SERVER_VIEW_SERVICE_PATH,
-        config.SERVER_CHOOSE_SERVICE_PATH,
-        wss_tool)
+new Promise((resolve, reject)=>{
+    if(Object.keys(config).filter(key=>!config[key]).length){
+        console.error('[WARN] Missing Env config, try local config-server.mjs')
+        return resolve(import('./config-'+(process.argv[2] || 'server')+'.mjs'));
+    }else{
+        resolve(config);
+    }
+}).then(config=>{
+    config = config.default;
+    if(Object.keys(config).filter(key=>!config[key]).length){
+        console.log('config is not fullfilled, exist now', config)
+        return;
+    }
+    
+    config.socket_ip_key = config.socket_ip_key.toLowerCase() + ':';
+    wss_tool.init(config.websocket_port, config.websocket_token)
+    sks.init(config, wss_tool)
 })
