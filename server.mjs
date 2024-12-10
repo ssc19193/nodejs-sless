@@ -16,7 +16,7 @@ new Promise((resolve, reject)=>{
         console.error('[WARN] Missing Env config, try local config-server.mjs')
         return resolve(import('./config-'+(process.argv[2] || 'server')+'.mjs'));
     }else{
-        resolve(config);
+        resolve({default:config});
     }
 }).then(config=>{
     config = config.default;
