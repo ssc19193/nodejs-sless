@@ -3,8 +3,6 @@ import net from 'net';
 
 let preWsCtl = null;
 function start(config) {
-    console.log('[CTL]Starting...', config);
-    
     const websocket_url = (config.socket_https ? 'wss://' : 'ws://') 
                             + config.socket_host + ":" + config.socket_port
                             + config.socket_ctl_path;
@@ -126,5 +124,6 @@ let config_file = './config-'+(process.argv[2] || 'default')+'.mjs'
 
 
 import(config_file).then(config=>{
+    console.log('[CTL]Starting...', config.default);
     start(config.default); 
 })

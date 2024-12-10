@@ -118,7 +118,7 @@ function init( config, ws_tool){
                 return;
             }
             if(ips.indexOf(ip) == -1){
-                socket.write(htmlHeader+'Backend is not preparing\r\n\r\n');
+                socket.write(htmlHeader+'Backend is preparing\r\n\r\n');
                 socket.end();
                 return;
             }
