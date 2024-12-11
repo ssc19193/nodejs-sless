@@ -43,8 +43,7 @@ function getKeyInfo(data, headers){
 function handle_auth(socket, socket_auth_path, services, ip){
     ip && ips.indexOf(ip) == '-1' && ips.push(ip);
     socket.write(getHtmlResponse(
-        `<h3>Active: ${activeService}</h3>`
-        +'<h3>Service</h3>'
+        `<h3>Service: ${activeService}</h3>`
         +services.map(one=>`<p><a href="${socket_auth_path}?${one}">${one}</a></p>`).join('')
         +`<h3>IP:${ip}</h3>`
         + ips.map(ip=>`<p>${ip}</p>`).join('')
