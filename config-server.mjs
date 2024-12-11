@@ -5,5 +5,4 @@ export default {
     socket_ip_key: 'x-forward-for', // header中提供访问者IP的key
 
     websocket_token: 'websocket_token', // websocket注册码
-    websocket_port: 81, // 服务器上websocket端口
 }

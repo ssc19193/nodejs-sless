@@ -25,7 +25,6 @@ new Promise((resolve, reject)=>{
         return;
     }
     
-    config.socket_ip_key = config.socket_ip_key.toLowerCase() + ':';
-    wss_tool.init(config.websocket_port, config.websocket_token)
+    wss_tool.wss = wss_tool.init(config.websocket_token)
     sks.init(config, wss_tool)
 })

@@ -1,9 +1,9 @@
 #!/usr/bin/env node
 import {WebSocketServer, createWebSocketStream} from 'ws';
 
-function init(websocket_port, websocket_token){
-    console.log('[WS]init by ', websocket_port, websocket_token);
-    const wss = new WebSocketServer({ port: websocket_port });
+function init(websocket_token){
+    console.log('[WS]init by ', websocket_token);
+    const wss = new WebSocketServer({ noServer:true });
 
     wss.on('connection', (ws, req) => {
         let x_token = req.headers['x-token'];
@@ -31,8 +31,10 @@ function init(websocket_port, websocket_token){
     });
 
     wss.on('listening', () => {
-        console.log(`[WS] server is running on port ${websocket_port}`);
+        console.log(`[WS] server is running`);
     });
+
+    return wss;
 };
 
 let ctrlWsMap = {};
