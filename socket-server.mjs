@@ -47,7 +47,7 @@ function handle_auth(socket, socket_auth_path, services, ip){
         +'<h3>Service</h3>'
         +services.map(one=>`<p><a href="${socket_auth_path}?${one}">${one}</a></p>`).join('')
         +`<h3>IP:${ip}</h3>`
-        + ips.map(ip=>`<p>${ip}</p>`)
+        + ips.map(ip=>`<p>${ip}</p>`).join('')
     ));
     socket.end();
 }
