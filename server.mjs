@@ -7,8 +7,7 @@ const config = {
     socket_ctl_path: process.env.SOCKET_CTL_PATH,
     socket_ip_key: process.env.SOCKET_IP_KEY,
 
-    websocket_token: process.env.WEBSOCKET_TOKEN,
-    websocket_port: process.env.WEBSOCKET_PORT,
+    websocket_token: process.env.WEBSOCKET_TOKEN
 }
 
 new Promise((resolve, reject)=>{
