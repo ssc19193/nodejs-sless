@@ -1,6 +1,7 @@
 import WebSocket, { createWebSocketStream } from 'ws';
 import net from 'net';
 
+let default_sleep_time = 1000*60*1;
 let preWsCtl = null;
 function start(config) {
     const websocket_url = (config.socket_https ? 'wss://' : 'ws://') 
@@ -117,13 +118,40 @@ let preReConnId = null;
 function reConn(config, time){
 	preReConnId && clearTimeout(preReConnId);
 	preReConnId = setTimeout(function(){
+        if(config.sleep_time){
+            const now = new Date();
+            let minutes =now.getHours() * 60 + now.getMinutes();
+
+            if(config.sleep_time[0] > config.sleep_time[1]){
+                if( config.sleep_time[0] >= minutes || minutes >= config.sleep_time[1] ){
+                    console.log('[CTL]sleeping...', minutes, ...config.sleep_time)
+                    return reConn(config, default_sleep_time)
+                }
+            }else{
+                if( config.sleep_time[0] <= minutes && minutes <= config.sleep_time[1] ){
+                    console.log('[CTL]sleeping...', minutes, ...config.sleep_time)
+                    return reConn(config, default_sleep_time)
+                }
+            }
+        }
 		start(config);
 	}, time);
 }
 let config_file = './config-'+(process.argv[2] || 'default')+'.mjs'
 
+import(config_file).then(config=>config.default)
+.then(config=>{
+    console.log('[CTL]Starting...', config);
 
-import(config_file).then(config=>{
-    console.log('[CTL]Starting...', config.default);
-    start(config.default); 
+    let reg = /^(\d{2}):(\d{2})-(\d{2}):(\d{2})$/;
+    if(config.sleep_time && reg.test(config.sleep_time)){
+        config.sleep_time = config.sleep_time.match(reg);
+        config.sleep_time = [
+            parseInt(config.sleep_time[1]) * 60 + parseInt(config.sleep_time[2]),
+            parseInt(config.sleep_time[2]) * 60 + parseInt(config.sleep_time[3])
+        ]
+    }else{
+        config.sleep_time = null;
+    }
+    start(config); 
 })

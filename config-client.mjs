@@ -11,5 +11,6 @@ export default {
     target_port: 80, // 被代理服务端口
 
     refresh_time: 1000 * 60 * 5, // 刷新Websocket间隔
-    retry_time: 1000 * 2 // Websocket错误重试间隔
+    retry_time: 1000 * 2, // Websocket错误重试间隔
+    sleep_time: '00:00-06:00' // 休眠时间(24小时制),时分，为空则不休眠, eg:01:00-06:00, 23:00-04:00
 }
