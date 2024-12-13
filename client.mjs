@@ -148,7 +148,7 @@ import(config_file).then(config=>config.default)
         config.sleep_time = config.sleep_time.match(reg);
         config.sleep_time = [
             parseInt(config.sleep_time[1]) * 60 + parseInt(config.sleep_time[2]),
-            parseInt(config.sleep_time[2]) * 60 + parseInt(config.sleep_time[3])
+            parseInt(config.sleep_time[3]) * 60 + parseInt(config.sleep_time[4])
         ]
     }else{
         config.sleep_time = null;

@@ -93,6 +93,7 @@ function handle_data(ws){
 
                 let ws_socket = createWebSocketStream(ws);
                 cbMap[idx].resolve(ws_socket);
+                delete cbMap[idx];
             }else{
                 console.log('[WS-DATA]callback of idx not exists', idx);
                 ws.send('ERR callback of idx not exists');
